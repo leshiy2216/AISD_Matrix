@@ -51,8 +51,23 @@ public:
     }
 
 
-    T& operator()(size_t r, size_t c);
-    Matrix operator+(const Matrix& other);
+    T& operator()(size_t r, size_t c)
+    {
+        return _data[r][c];
+    }
+
+    Matrix operator+(const Matrix& other) const
+    {
+        Matrix c(_rows, _cols, 0);
+        for(size_t i = 0; i < _rows; i++)
+        {
+            for(size_t j = 0; j < _cols; j++)
+            {
+                c._data[i][j] = _data[i][j] + other._data[i][j];
+            }
+        }
+        return c;
+    }
     Matrix operator-(const Matrix& other);
 
     T getRows()
@@ -71,6 +86,9 @@ int main()
     Matrix a(2, 2, 4);
     a.print();
     std::cout << std::endl;
-    Matrix b(3, 3, 1, 3);
+    Matrix b(2, 2, 1, 3);
     b.print();
+    std::cout << std::endl;
+    Matrix c = a + b;
+    c.print();
 }

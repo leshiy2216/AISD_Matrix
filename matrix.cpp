@@ -1,5 +1,6 @@
 #include <iostream>
 #include <random> // generate random number
+#include <stdexcept>
 
 template<class T>
 class Matrix
@@ -51,7 +52,7 @@ public:
     }
 
 
-    T& operator()(size_t r, size_t c)
+    T& operator()(size_t r, size_t c) const
     {
         return _data[r][c];
     }
@@ -63,19 +64,57 @@ public:
         {
             for(size_t j = 0; j < _cols; j++)
             {
-                c._data[i][j] = _data[i][j] + other._data[i][j];
+                c(i, j) = _data[i][j] + other(i, j);
             }
         }
         return c;
     }
-    Matrix operator-(const Matrix& other);
+    Matrix operator-(const Matrix& other) const
+    {
+        Matrix c(_rows, _cols, 0);
+        for(size_t i = 0; i < _rows; i++)
+        {
+            for(size_t j = 0; j < _cols; j++)
+            {
+                c(i, j) = _data[i][j] - other(i, j);
+            }
+        }
+        return c;
+    }
 
-    T getRows()
+    Matrix operator*(const Matrix& other) const
+    {
+        if (_cols!=other.getRows()) throw std::runtime_error("Multiply is impossible");
+        Matrix c(_rows, other.getCols(), 0);
+        for (size_t i = 0; i < _rows; i++) {
+            for (size_t j = 0; j < other.getCols(); j++) {
+                for (size_t k = 0; k < _cols; k++) {
+                    c(i, j) += _data[i][k] * other(k, j);
+                }
+            }
+        }
+        return c;
+    }
+
+    Matrix operator*(T scalar) const
+    {
+        Matrix c(_rows, _cols, 0);
+        for(size_t i = 0; i < _rows; i++)
+        {
+            for(size_t j = 0; j < _cols; j++)
+            {
+                c(i, j) = _data[i][j] * scalar;
+            }
+        }
+        return c;
+    }
+
+    size_t getRows() const
     {
         return _rows;
     }
 
-    T getCols()
+    size_t getCols() const
     {
         return _cols;
     }
@@ -83,12 +122,14 @@ public:
 
 int main()
 {
-    Matrix a(2, 2, 4);
+    Matrix a(2, 3, 3);
     a.print();
     std::cout << std::endl;
+
     Matrix b(2, 2, 1, 3);
     b.print();
     std::cout << std::endl;
-    Matrix c = a + b;
-    c.print();
+
+    Matrix z = a * 2;
+    z.print();
 }

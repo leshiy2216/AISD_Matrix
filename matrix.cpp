@@ -71,10 +71,8 @@ void print()
     Matrix operator+(const Matrix& other) const
     {
         Matrix c(_rows, _cols, 0);
-        if ((_rows != other.getRows()) || (_cols != other.getCols()))
-        {
-            throw std::runtime_error("Matrix's can be equally");
-        }
+        if ((_rows != other.getRows()) || (_cols != other.getCols())) throw std::runtime_error("Matrix's can be equally");
+
         for(size_t i = 0; i < _rows; i++)
         {
             for(size_t j = 0; j < _cols; j++)
@@ -88,10 +86,8 @@ void print()
     Matrix operator-(const Matrix& other) const
     {
         Matrix c(_rows, _cols, 0);
-        if ((_rows != other.getRows()) || (_cols != other.getCols()))
-        {
-            throw std::runtime_error("Matrix's can be equally");
-        }
+        if ((_rows != other.getRows()) || (_cols != other.getCols())) throw std::runtime_error("Matrix's can be equally");
+
         for(size_t i = 0; i < _rows; i++)
         {
             for(size_t j = 0; j < _cols; j++)
@@ -147,10 +143,8 @@ void print()
 
     Matrix operator/(T scalar) const 
     {
-        if (scalar == 0) 
-        {
-            throw std::runtime_error("Division by zero");
-        }
+        if (scalar == 0) throw std::runtime_error("Division by zero");
+
         Matrix c(_rows, _cols, 0);
         for (size_t i = 0; i < _rows; ++i) 
         {
@@ -165,10 +159,8 @@ void print()
     T trace() const
     {
         T sum = 0;
-        if (_rows != _cols)
-        {
-            throw std::runtime_error("Only for square matrix's");
-        }
+        if (_rows != _cols) throw std::runtime_error("Only for square matrix's");
+
         for (size_t i = 0; i < _rows; i++)
         {
             sum = sum + _data[i][i];
@@ -178,12 +170,58 @@ void print()
 
     T determinant() const
     {
-        if (_rows != _cols) throw std::runtime_error("Determinant only for square matrix's")
+        if (_rows != _cols) throw std::runtime_error("Determinant only for square matrix's");
+        if (_rows == 1) return _data[0][0];
+        if (_rows == 2) return _data[0][0] * _data[1][1] - _data[0][1] * _data[1][0];
+        else
+        {
+            T det = 0;
+            for (size_t j = 0; j < _cols; j++)
+            {
+                Matrix submatrix(_rows - 1, _cols - 1, 0);
+                for (size_t row = 1; row < _rows; row++)
+                {
+                    for (size_t col = 0; col < _cols; col++)
+                    {
+                        if (col == j)
+                            continue;
+                        submatrix(row - 1, col < j ? col : col - 1) = _data[row][col];
+                    }
+                }
+                det += (_data[0][j] * submatrix.determinant()) * (j % 2 == 0 ? 1 : -1);
+            }
+        return det;
+        }
     }
 
     Matrix reverseMatrix()
     {
+        if (_rows != _cols) throw std::runtime_error("Reverse only for square matrix's");
+        T det = determinant();
+        if (det == 0) throw std::runtime_error("Cannot calculate reverse matrix");
 
+        Matrix reversed(_rows, _rows, 0);
+        for (size_t i = 0; i < _rows; i++)
+        {
+            for (size_t j = 0; j < _rows; j++)
+            {
+                Matrix minor(_rows - 1, _rows - 1, 0);
+                for (size_t row = 0, minorRow = 0; row < _rows; row++)
+                {
+                    if (row == i) continue;
+                    for (size_t col = 0, minorCol = 0; col < _rows; col++)
+                    {
+                        if (col == j) continue;
+                        minor(minorRow, minorCol) = _data[row][col];
+                        minorCol++;
+                    }
+                    minorRow++;
+                }
+                T cofactor = minor.determinant() * ((i + j) % 2 == 0 ? 1 : -1);
+                reversed(j, i) = cofactor / det;
+            }
+        }
+        return reversed;
     }
 
     size_t getRows() const
@@ -199,5 +237,12 @@ void print()
 
 int main()
 {
-    
+    Matrix a(3, 3, 1, 3);
+    a.print();
+    std::cout << std::endl;
+    Matrix b(3, 3, 3, 8);
+    b.print();
+    Matrix x = a.reverseMatrix() * b;
+    std::cout << std::endl;
+    x.print();
 }
